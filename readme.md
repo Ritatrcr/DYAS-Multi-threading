@@ -1,269 +1,57 @@
-### Taller sobre Multi-threading en Java
 
-#### Objetivo
-El objetivo de este taller es aprender los conceptos fundamentales de multi-threading en Java, implementando ejemplos prácticos para entender cómo manejar múltiples hilos en una aplicación Java.
+# Proyecto de Procesamiento Paralelo en Java
 
-#### Pre-requisitos
-- Conocimientos básicos de Java.
-- Familiaridad con conceptos de concurrencia y threading.
+Este proyecto implementa un ejemplo de procesamiento paralelo en Java usando hilos, donde se calculan los cuadrados de una lista de números del 1 al 10 utilizando múltiples hilos. El código hace uso de la interfaz `Callable` y el servicio `ExecutorService` para ejecutar tareas de manera concurrente y obtener los resultados.
 
-### Paso 1: Configuración del Proyecto
+## Tecnologías
 
-#### Configuración del `pom.xml`
-Para este taller, podemos utilizar una configuración básica de Maven:
+- **Java 17**
+- **ExecutorService**
+- **Callable**
+- **Future**
 
-```xml
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+## Estructura del Proyecto
 
-    <groupId>com.example</groupId>
-    <artifactId>multi-threading</artifactId>
-    <version>1.0-SNAPSHOT</version>
+El proyecto está compuesto por dos clases principales:
 
-    <dependencies>
-        <!-- Dependencias estándar -->
-    </dependencies>
+1. **`SquareTask.java`**: Una clase que implementa la interfaz `Callable` para calcular el cuadrado de un número.
+2. **`ParallelProcessingExample.java`**: La clase principal que gestiona la creación y ejecución de los hilos en paralelo utilizando un `ExecutorService`.
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-</project>
-```
+### 1. **`SquareTask.java`**
 
-### Paso 2: Ejemplos de Multi-threading en Java
-
-#### 1. Creación de Hilos con `Thread`
-
-**Código:**
+Esta clase implementa la interfaz `Callable<Integer>`, lo que permite ejecutar el cálculo del cuadrado de un número en un hilo separado. El método `call()` es el encargado de calcular el cuadrado de un número.
 
 ```java
-public class ThreadExample {
-    public static void main(String[] args) {
-        Thread thread = new Thread(() -> {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("Thread: " + i);
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+package com.create;
 
-        thread.start(); // Inicia el hilo
-    }
-}
-```
-
-**Explicación:**
-- Se crea un nuevo hilo utilizando la clase `Thread`.
-- La lógica del hilo se define dentro de un bloque `Runnable` proporcionado al constructor de `Thread`.
-- El hilo imprime un contador de 0 a 4, pausando por 1 segundo entre cada impresión.
-- `thread.start()` inicia la ejecución del hilo.
-
-#### 2. Creación de Hilos con `Runnable`
-
-**Código:**
-
-```java
-public class RunnableExample {
-    public static void main(String[] args) {
-        Runnable task = () -> {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("Runnable: " + i);
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        Thread thread = new Thread(task); // Crea un hilo con el Runnable
-        thread.start(); // Inicia el hilo
-    }
-}
-```
-
-**Explicación:**
-- Se define una tarea `Runnable` que imprime un contador de 0 a 4, pausando por 1 segundo entre cada impresión.
-- Se crea un nuevo hilo utilizando el `Runnable` como argumento para el constructor de `Thread`.
-- `thread.start()` inicia la ejecución del hilo.
-
-#### 3. Sincronización de Hilos
-
-**Código:**
-
-```java
-public class SynchronizedExample {
-    private static int counter = 0;
-
-    public static synchronized void increment() {
-        counter++;
-    }
-
-    public static void main(String[] args) {
-        Runnable task = () -> {
-            for (int i = 0; i < 1000; i++) {
-                increment(); // Incrementa el contador de manera sincronizada
-            }
-        };
-
-        Thread thread1 = new Thread(task);
-        Thread thread2 = new Thread(task);
-
-        thread1.start();
-        thread2.start();
-
-        try {
-            thread1.join(); // Espera a que thread1 termine
-            thread2.join(); // Espera a que thread2 termine
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("Counter: " + counter); // Imprime el valor final del contador
-    }
-}
-```
-
-**Explicación:**
-- Se define un método `increment()` que incrementa un contador de manera sincronizada.
-- Dos hilos ejecutan una tarea que llama al método `increment()` 1000 veces.
-- `thread1.join()` y `thread2.join()` aseguran que el programa principal espere a que ambos hilos terminen antes de continuar.
-- El valor final del contador se imprime al final.
-
-#### 4. Uso de `ExecutorService`
-
-**Código:**
-
-```java
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-public class ExecutorServiceExample {
-    public static void main(String[] args) {
-        ExecutorService executor = Executors.newFixedThreadPool(2); // Crea un pool de 2 hilos
-
-        Runnable task1 = () -> {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("Task 1: " + i);
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        Runnable task2 = () -> {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("Task 2: " + i);
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        executor.submit(task1); // Envía la tarea 1 al pool de hilos
-        executor.submit(task2); // Envía la tarea 2 al pool de hilos
-
-        executor.shutdown(); // Finaliza el pool de hilos una vez completadas las tareas
-    }
-}
-```
-
-**Explicación:**
-- Se crea un `ExecutorService` con un pool de 2 hilos.
-- Se definen dos tareas `Runnable` que imprimen un contador de 0 a 4, pausando por 1 segundo entre cada impresión.
-- Las tareas se envían al pool de hilos utilizando `executor.submit()`.
-- `executor.shutdown()` finaliza el pool de hilos una vez que todas las tareas han sido completadas.
-
-#### 5. Uso de `Callable` y `Future`
-
-**Código:**
-
-```java
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
-public class CallableExample {
-    public static void main(String[] args) {
-        ExecutorService executor = Executors.newFixedThreadPool(2); // Crea un pool de 2 hilos
+public class SquareTask implements Callable<Integer> {
+    private int num;
 
-        Callable<Integer> task = () -> {
-            int sum = 0;
-            for (int i = 0; i < 5; i++) {
-                sum += i;
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return sum; // Retorna la suma de los números
-        };
+    public SquareTask(int num) {
+        this.num = num;
+    }
 
-        Future<Integer> future = executor.submit(task); // Envía la tarea y recibe un Future
-
-        try {
-            Integer result = future.get(); // Obtiene el resultado de la tarea
-            System.out.println("Sum: " + result); // Imprime el resultado
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        executor.shutdown(); // Finaliza el pool de hilos
+    @Override
+    public Integer call() throws Exception {
+        // Imprime el nombre del hilo que está ejecutando la tarea
+        System.out.println("Hilo " + Thread.currentThread().getName() + " está procesando el número: " + num);
+        
+        // Calcula el cuadrado del número
+        return num * num;
     }
 }
 ```
 
-**Explicación:**
-- Se crea un `ExecutorService` con un pool de 2 hilos.
-- Se define una tarea `Callable` que calcula la suma de los números del 0 al 4, pausando por 1 segundo entre cada iteración.
-- La tarea se envía al pool de hilos utilizando `executor.submit()`, y se recibe un `Future` que representará el resultado de la tarea.
-- `future.get()` se utiliza para obtener el resultado de la tarea una vez que se ha completado.
-- `executor.shutdown()` finaliza el pool de hilos una vez que todas las tareas han sido completadas.
+### 2. **`ParallelProcessingExample.java`**
 
-### Paso 3: Crear un Ejemplo Propio
-
-**Instrucciones para los Estudiantes:**
-
-1. **Definir un Caso de Uso:**
-   - Piensa en un escenario donde el multi-threading pueda ser útil. Por ejemplo, procesamiento paralelo de datos, tareas de I/O concurrentes, etc.
-2. **Seleccionar la Estrategia de Multi-threading:**
-   - Elige la estrategia de multi-threading adecuada para tu caso de uso (`Thread`, `Runnable`, `ExecutorService`, etc.).
-3. **Implementar el Ejemplo:**
-   - Implementa tu ejemplo en Java utilizando la estrategia seleccionada.
-   - Asegúrate de comentar tu código para explicar qué hace cada parte y cómo se gestionan los hilos.
-4. **Probar y Depurar:**
-   - Ejecuta tu código y verifica que funcione como esperas. Asegúrate de manejar cualquier posible error.
-5. **Compartir y Discutir:**
-   - Comparte tu código con los demás estudiantes del taller. Discutan sobre las diferentes implementaciones y enfoques utilizados.
-
-**Ejemplo de Código para los Estudiantes:**
-
-Aquí tienes un ejemplo sencillo para inspirarte. Supongamos que queremos procesar una lista de tareas en paralelo y sumar los resultados.
+La clase principal crea un conjunto de tareas (`SquareTask`), las envía al `ExecutorService` para ser ejecutadas en paralelo y luego recoge los resultados. El `ExecutorService` gestiona el pool de hilos, distribuyendo las tareas entre ellos. Al final, se calcula la suma de los cuadrados de todos los números procesados.
 
 ```java
-import java.util.Arrays;
+package com.create;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -271,46 +59,112 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class CustomThreadExample {
-    public static void main(String[] args) {
-        List<Callable<Integer>> tasks = Arrays.asList(
-                () -> { Thread.sleep(1000); return 10; },
-                () -> { Thread.sleep(1000); return 20; },
-                () -> { Thread.sleep(1000); return 30; }
-        );
+public class ParallelProcessingExample {
 
+    public static void main(String[] args) {
+        // Lista de números a procesar
+        List<Integer> numbers = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            numbers.add(i);
+        }
+
+        // Creamos un pool de hilos con 3 hilos
         ExecutorService executor = Executors.newFixedThreadPool(3);
 
+        // Lista para almacenar las tareas (Callable)
+        List<Callable<Integer>> tasks = new ArrayList<>();
+
+        // Definimos las tareas: calcular el cuadrado de cada número
+        for (int num : numbers) {
+            // Crear una tarea SquareTask para cada número
+            tasks.add(new SquareTask(num));
+        }
+
         try {
+            // Enviamos las tareas al pool y obtenemos los resultados
             List<Future<Integer>> results = executor.invokeAll(tasks);
-            int sum = 0;
+
+            // Sumamos los resultados de las tareas
+            int totalSum = 0;
             for (Future<Integer> result : results) {
-                sum += result.get();
+                totalSum += result.get(); // Esperamos a que cada tarea termine y obtenemos el resultado
             }
-            System.out.println("Sum: " + sum);
+
+            // Imprimimos el resultado final
+            System.out.println("Suma de los cuadrados: " + totalSum);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } finally {
+            // Cerramos el pool de hilos
             executor.shutdown();
         }
     }
 }
 ```
 
-### Paso 4: Resumen y Conclusión
+## ¿Cómo funciona el código?
 
-#### Resumen del Taller
-- Aprendimos a utilizar diversas estrategias de multi-threading en Java: `Thread`, `Runnable`, `synchronized`, `ExecutorService`, `Callable`, y `Future`.
-- Implementamos ejemplos prácticos para entender cómo manejar y sincronizar múltiples hilos en una aplicación Java.
-- Los estudiantes crearon sus propios ejemplos para aplicar lo aprendido.
+### Generación de Números
+El código genera una lista de números del 1 al 10 que se procesarán para calcular sus cuadrados.
 
-#### Conclusión
-El multi-threading es una poderosa herramienta para mejorar el rendimiento y la capacidad de respuesta de las aplicaciones. Las estrategias y técnicas que hemos explorado en este taller son fundamentales para construir aplicaciones concurrentes y escalables. Continuar practicando con estos conceptos y explorando otros aspectos de la concurrencia te permitirá construir aplicaciones más robustas y eficientes.
+### Creación del ExecutorService
+Se crea un pool de hilos utilizando `ExecutorService`, con un máximo de 3 hilos. Este pool es responsable de ejecutar las tareas en paralelo.
 
-### Ejecución del Taller
-1. Configura tu entorno de desarrollo con las dependencias necesarias.
-2. Implementa y ejecuta cada ejemplo de multi-threading en Java.
-3. Crea y comparte tu propio ejemplo utilizando las estrategias aprendidas.
-4. Experimenta con otras técnicas de concurrencia y casos de uso para profundizar en tu comprensión del multi-threading.
+### Definición de Tareas
+Se crean instancias de `SquareTask` para cada número de la lista. Cada tarea se encarga de calcular el cuadrado de un número y devolver el resultado.
 
-Este taller proporciona una base sólida para comenzar a trabajar con multi-threading en Java y fomenta la creación de ejemplos propios para reforzar el aprendizaje.
+### Ejecución de Tareas
+Las tareas se envían al `ExecutorService` para ser ejecutadas en paralelo. El método `invokeAll` se utiliza para ejecutar todas las tareas de manera concurrente y recoger los resultados.
+
+### Obtención de Resultados
+Se espera que todas las tareas terminen utilizando `result.get()`. Luego, se suman todos los resultados de los cuadrados.
+
+### Impresión del Resultado Final
+Finalmente, se imprime la suma de los cuadrados de los números.
+
+### Cierre del ExecutorService
+Después de que todas las tareas se han completado, se cierra el pool de hilos utilizando `executor.shutdown()`.
+
+## Salida Esperada
+
+Cuando se ejecuta el programa, deberías ver una salida similar a esta en la consola:
+
+```
+Hilo pool-1-thread-1 está procesando el número: 1
+Hilo pool-1-thread-2 está procesando el número: 2
+Hilo pool-1-thread-3 está procesando el número: 3
+Hilo pool-1-thread-1 está procesando el número: 4
+Hilo pool-1-thread-2 está procesando el número: 5
+Hilo pool-1-thread-3 está procesando el número: 6
+Hilo pool-1-thread-1 está procesando el número: 7
+Hilo pool-1-thread-2 está procesando el número: 8
+Hilo pool-1-thread-3 está procesando el número: 9
+Hilo pool-1-thread-1 está procesando el número: 10
+Suma de los cuadrados: 385
+```
+
+![Resultado](src/main/java/com/create/image.png)
+
+
+## ¿Por qué usar procesamiento paralelo?
+
+El procesamiento paralelo es útil para realizar tareas independientes al mismo tiempo, lo que mejora el rendimiento en aplicaciones que necesitan manejar múltiples tareas simultáneamente. En este caso, calculamos el cuadrado de varios números de manera paralela, lo que permite que cada número sea procesado por un hilo diferente, reduciendo el tiempo total de procesamiento.
+
+## Requisitos
+
+- **Java 17**: El código está diseñado para ser ejecutado con JDK 17.
+- **Maven**: Utiliza Maven para gestionar dependencias y la construcción del proyecto.
+
+## Ejecución
+
+Para ejecutar el proyecto, asegúrate de que tienes Java 17 instalado y ejecuta los siguientes comandos desde la terminal:
+
+1. **Compilar el proyecto**:
+   ```bash
+   mvn clean install
+   ```
+
+2. **Ejecutar el proyecto**:
+   ```bash
+   mvn exec:java -Dexec.mainClass="com.create.ParallelProcessingExample"
+   ```
